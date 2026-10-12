@@ -1,0 +1,18 @@
+meta {
+  name: Approve Report
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/reports/1/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "approved",
+    "catatan": "Laporan telah diverifikasi oleh tim lapangan dan disetujui untuk tindakan segera."
+  }
+}

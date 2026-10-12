@@ -1,0 +1,20 @@
+meta {
+  name: Create Report
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/reports
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nama": "Pohon Tumbang di Simpang Lima",
+    "deskripsi": "Batang pohon besar roboh menutupi separuh jalan akibat angin kencang.",
+    "lokasi": "Simpang Lima, Kota Semarang",
+    "pelapor": "Bambang Wijaya"
+  }
+}

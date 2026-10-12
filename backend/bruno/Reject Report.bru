@@ -1,0 +1,18 @@
+meta {
+  name: Reject Report
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/api/reports/1/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "rejected",
+    "catatan": "Informasi tidak valid atau lokasi tidak ditemukan setelah pengecekan petugas."
+  }
+}

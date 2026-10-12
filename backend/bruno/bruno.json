@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Field Reports API (MAPID)",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

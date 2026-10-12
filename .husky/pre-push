@@ -1,0 +1,8 @@
+#!/bin/sh
+echo "Running pre-push build checks..."
+
+echo "Building backend..."
+npm --prefix backend run build || exit 1
+
+echo "Building frontend..."
+npm --prefix frontend run build || exit 1

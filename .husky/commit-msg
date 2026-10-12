@@ -1,0 +1,2 @@
+#!/bin/sh
+npx --prefix backend commitlint --config backend/.commitlintrc.json --edit "$1"

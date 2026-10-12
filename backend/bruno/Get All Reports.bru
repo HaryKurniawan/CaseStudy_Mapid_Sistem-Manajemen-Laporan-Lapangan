@@ -1,0 +1,18 @@
+meta {
+  name: Get All Reports
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/reports
+  body: none
+  auth: none
+}
+
+params:query {
+  ~status: pending
+  ~search: pipa
+  ~page: 1
+  ~limit: 10
+}
