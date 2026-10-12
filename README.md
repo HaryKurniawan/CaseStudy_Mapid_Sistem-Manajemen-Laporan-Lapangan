@@ -29,6 +29,10 @@ Aplikasi web fullstack untuk mengelola dan memverifikasi laporan lapangan, terdi
 
 ```text
 mapid/
+├── .husky/                           # Git Hooks otomatis
+│   ├── commit-msg                    # Validasi commit message (commitlint)
+│   ├── pre-commit                    # Validasi lint & typecheck staged files (lint-staged)
+│   └── pre-push                      # Validasi build backend & frontend sebelum push
 ├── backend/
 │   ├── bruno/                        # Koleksi Bruno API Client
 │   │   ├── bruno.json                # Konfigurasi koleksi Bruno
@@ -48,7 +52,15 @@ mapid/
 │   │   ├── config/
 │   │   │   └── prisma.ts             # Inisialisasi Prisma Client
 │   │   ├── controllers/
-│   │   │   └── report.controller.ts  # Handler endpoint laporan & stats
+│   │   │   ├── report/               # 1 file per fungsi controller
+│   │   │   │   ├── createReport.controller.ts       # Handler buat laporan baru
+│   │   │   │   ├── getReports.controller.ts         # Handler list laporan (filter, search, sort)
+│   │   │   │   ├── getReportById.controller.ts      # Handler detail laporan by ID
+│   │   │   │   ├── updateReportStatus.controller.ts # Handler update status & catatan
+│   │   │   │   ├── deleteReport.controller.ts       # Handler hapus laporan by ID
+│   │   │   │   ├── getReportStats.controller.ts     # Handler ringkasan statistik status
+│   │   │   │   └── index.ts                         # Barrel export modul controller
+│   │   │   └── report.controller.ts                 # Facade & backward compatibility export
 │   │   ├── middlewares/
 │   │   │   └── errorHandler.ts       # Error handler & 404 handler
 │   │   ├── routes/
@@ -60,6 +72,8 @@ mapid/
 │   │   ├── app.ts                    # Inisialisasi Express & middlewares
 │   │   └── index.ts                  # Server listener entry point
 │   ├── schema.sql                    # Skema database PostgreSQL murni (DDL)
+│   ├── .commitlintrc.json            # Konfigurasi commitlint backend
+│   ├── .lintstagedrc.cjs             # Konfigurasi lint-staged backend
 │   ├── .env                          # Konfigurasi environment backend
 │   ├── .env.example
 │   ├── package.json
@@ -69,7 +83,7 @@ mapid/
 │   │   ├── components/
 │   │   │   ├── Navbar.tsx            # Header & tombol aksi cepat
 │   │   │   ├── StatsOverview.tsx     # Kartu statistik ringkasan status
-│   │   │   ├── ReportFilter.tsx      # Tab status & search bar
+│   │   │   ├── ReportFilter.tsx      # Tab status & sort Terbaru / Terlama
 │   │   │   ├── ReportTable.tsx       # Tabel laporan dengan Tailwind & Antd Popconfirm
 │   │   │   ├── CreateReportModal.tsx # Ant Design Modal pop-up tambah laporan
 │   │   │   ├── StatusChangeModal.tsx # Ant Design Modal pop-up Approve / Reject
@@ -81,6 +95,8 @@ mapid/
 │   │   ├── App.tsx                   # Main Dashboard component
 │   │   ├── main.tsx
 │   │   └── index.css                 # Tailwind CSS directives
+│   ├── .commitlintrc.json            # Konfigurasi commitlint frontend
+│   ├── .lintstagedrc.js              # Konfigurasi lint-staged frontend
 │   ├── .env                          # Konfigurasi environment frontend
 │   ├── .env.example
 │   ├── index.html
@@ -93,9 +109,11 @@ mapid/
 
 ---
 
-## Skema Database (`schema.sql`)
+## Skema Database Model
 
-Struktur tabel database PostgreSQL sesuai kriteria:
+Skema tabel database didefinisikan secara deklaratif menggunakan **Prisma ORM** (`backend/prisma/schema.prisma`) dan dapat langsung disinkronkan ke PostgreSQL dengan `npx prisma db push`. File DDL murni juga tetap disediakan di [`backend/schema.sql`](./backend/schema.sql) sebagai referensi DDL mentah.
+
+Struktur tabel database sesuai kriteria studi kasus:
 
 - `nama`: Nama laporan (VARCHAR 255, NOT NULL)
 - `deskripsi`: Penjelasan detail permasalahan (TEXT, NOT NULL)
@@ -104,8 +122,6 @@ Struktur tabel database PostgreSQL sesuai kriteria:
 - `status`: Enum (`pending`, `approved`, `rejected`) dengan nilai default `'pending'`
 - `catatan`: Catatan verifikasi saat disetujui / ditolak (TEXT, NULLABLE)
 - `createdAt` & `updatedAt`: Timestamp otomatis
-
-File lengkap tersedia di [`backend/schema.sql`](./backend/schema.sql).
 
 ---
 
@@ -120,13 +136,13 @@ File lengkap tersedia di [`backend/schema.sql`](./backend/schema.sql).
 
 ### 2. Setup Database PostgreSQL
 
-Buat database baru di PostgreSQL lokal (misal bernama `field_reports_db`):
+1. Buat database kosong di PostgreSQL lokal:
 
 ```sql
 CREATE DATABASE field_reports_db;
 ```
 
-Pastikan file `backend/.env` telah terisi kredensial PostgreSQL Anda:
+2. Pastikan file `backend/.env` telah terisi kredensial PostgreSQL Anda:
 
 ```env
 PORT=5000
@@ -136,6 +152,8 @@ FRONTEND_URL="http://localhost:5173"
 ```
 
 _(Sesuaikan `postgres:root` dengan username dan password PostgreSQL lokal Anda)_.
+
+> **Tips Penting**: Anda **tidak perlu** mengimpor atau mengeksekusi file SQL manual. Tabel dan enum database akan otomatis dibuat dan disinkronkan langsung dari Prisma ORM menggunakan perintah `npx prisma db push`.
 
 ---
 
@@ -149,7 +167,7 @@ cd backend
 # 1. Install dependensi
 npm install
 
-# 2. Sinkronisasi skema ke database PostgreSQL
+# 2. Sinkronisasi skema langsung dari ORM ke PostgreSQL (otomatis membuat tabel & enum)
 npx prisma db push
 
 # 3. (Opsional) Isi database dengan data contoh realistis
