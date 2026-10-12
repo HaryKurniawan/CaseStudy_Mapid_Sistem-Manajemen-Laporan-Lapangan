@@ -284,9 +284,9 @@ Anda dapat langsung mencoba semua endpoint (Try it out) secara interaktif dari a
    - Menampilkan daftar laporan dalam tabel lengkap dengan status badge.
    - Form tambah laporan tersedia dengan validasi input.
    - Tombol **Approve** dan **Reject** tersedia pada setiap baris laporan dengan konfirmasi pop-up.
-3. **Ketentuan Tambahan**:
+3. **Tambahan**:
    - Menggunakan **Bruno** collection (`backend/bruno/`).
    - Menggunakan **Swagger UI** (`/api-docs`).
    - Menggunakan **Tailwind CSS** untuk seluruh styling layout & komponen.
    - Menggunakan **Ant Design (antd)** _hanya untuk pop up saja_ (Modal form, Modal status confirm, Popconfirm delete, Message alerts).
-   - Menjalankan secara langsung di lokal (tanpa Docker).
+   - Menggunakan **Husky**, **lint-staged**, dan **Commitlint** untuk automated Git hooks (`pre-commit`, `commit-msg`, dan `pre-push` build checks).
