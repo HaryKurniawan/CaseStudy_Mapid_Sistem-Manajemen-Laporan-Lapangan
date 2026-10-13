@@ -38,3 +38,9 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
+
+// Kompatibilitas untuk Vercel Serverless Functions (CommonJS)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = app;
+  (module.exports as any).default = app;
+}
