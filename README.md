@@ -6,27 +6,27 @@ Aplikasi ini telah mengimplementasikan sistem **Multi-Role RBAC (Admin, Approver
 
 ---
 
-## 🔑 Akun Demo (Untuk Evaluasi Cepat)
+## Akun Demo (Untuk Evaluasi Cepat)
 
 Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi tanpa registrasi manual, telah disediakan akun demo untuk masing-masing peran (role). Anda juga dapat menggunakan fitur **1-Klik Masuk** di halaman login:
 
-| Peran (Role) | Email | Password | Nama Pengguna | Hak Akses & Deskripsi |
-| :--- | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@mapid.io` | `password123` | Super Admin | Akses penuh: mengelola akun pengguna (buat & hapus user), memantau seluruh laporan, mengedit laporan, menyetujui/menolak, dan menghapus laporan. |
-| **Approver** | `approver@mapid.io` | `password123` | Bambang Verifikator | Memantau seluruh laporan, melakukan verifikasi persetujuan (**Approve** / **Reject**), mengubah keputusan (dari reject ke approve dan sebaliknya), serta mencatat riwayat keputusan. |
-| **Pelapor 1** | `pelapor1@mapid.io` | `password123` | Budi Santoso | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Budi), serta mengedit laporan selama statusnya masih `pending`. |
-| **Pelapor 2** | `pelapor2@mapid.io` | `password123` | Siti Rahma | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Siti). Digunakan untuk menguji isolasi data antar-pelapor. |
+| Peran (Role)  | Email               | Password      | Nama Pengguna       | Hak Akses & Deskripsi                                                                                                                                                                |
+| :------------ | :------------------ | :------------ | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Admin**     | `admin@mapid.io`    | `password123` | Super Admin         | Akses penuh: mengelola akun pengguna (buat & hapus user), memantau seluruh laporan, mengedit laporan, menyetujui/menolak, dan menghapus laporan.                                     |
+| **Approver**  | `approver@mapid.io` | `password123` | Bambang Verifikator | Memantau seluruh laporan, melakukan verifikasi persetujuan (**Approve** / **Reject**), mengubah keputusan (dari reject ke approve dan sebaliknya), serta mencatat riwayat keputusan. |
+| **Pelapor 1** | `pelapor1@mapid.io` | `password123` | Budi Santoso        | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Budi), serta mengedit laporan selama statusnya masih `pending`.                                                   |
+| **Pelapor 2** | `pelapor2@mapid.io` | `password123` | Siti Rahma          | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Siti). Digunakan untuk menguji isolasi data antar-pelapor.                                                        |
 
 ---
 
-## ✨ Fitur & Aturan Bisnis (Studi Kasus)
+## Fitur & Aturan Bisnis (Studi Kasus)
 
 1. **Role Pengguna**:
    - **Admin**: Mengelola pengguna baru dan memiliki kontrol penuh atas seluruh laporan.
    - **Approver**: Melakukan verifikasi dan keputusan status laporan lapangan.
    - **Pelapor**: Mengirimkan dan memantau status laporan lapangan.
 2. **Pengelolaan Akun Terpusat**:
-   - Akun pengguna dibuat langsung oleh **Admin** melalui menu *Kelola Akun*, bukan melalui halaman registrasi publik/mandiri.
+   - Akun pengguna dibuat langsung oleh **Admin** melalui menu _Kelola Akun_, bukan melalui halaman registrasi publik/mandiri.
 3. **Akses Laporan Terisolasi**:
    - **Pelapor hanya dapat melihat laporan yang dibuatnya sendiri** baik pada daftar tabel, pencarian, filter, maupun ringkasan statistik.
    - Admin dan Approver dapat melihat seluruh laporan dari semua pelapor.
@@ -39,9 +39,10 @@ Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi t
 
 ---
 
-## 🛠️ Ringkasan Teknologi (Tech Stack)
+## Ringkasan Teknologi (Tech Stack)
 
 ### **Backend**
+
 - **Runtime & Framework**: [Node.js](https://nodejs.org/) v22+, [Express.js](https://expressjs.com/) (TypeScript)
 - **Database**: [PostgreSQL](https://www.postgresql.org/) (Lokal)
 - **ORM**: [Prisma ORM](https://www.prisma.io/)
@@ -52,14 +53,15 @@ Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi t
 - **File Skema Database**: File SQL DDL mentah di [`backend/schema.sql`](./backend/schema.sql)
 
 ### **Frontend**
+
 - **Framework**: [React 18](https://react.dev/) dengan [Vite](https://vitejs.dev/) & TypeScript
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) untuk layout, dashboard, kartu statistik, dan antarmuka login responsif
-- **Komponen Pop-up**: [Ant Design (antd)](https://ant.design/) *khusus untuk pop-up saja* (Modal Tambah Laporan, Modal Edit Laporan, Modal Review Status, Modal Detail & Riwayat Persetujuan, Popconfirm Hapus, Message Toasts)
+- **Komponen Pop-up**: [Ant Design (antd)](https://ant.design/) _khusus untuk pop-up saja_ (Modal Tambah Laporan, Modal Edit Laporan, Modal Review Status, Modal Detail & Riwayat Persetujuan, Popconfirm Hapus, Message Toasts)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ---
 
-## 📁 Struktur Direktori
+## Struktur Direktori
 
 ```text
 mapid/
@@ -133,11 +135,12 @@ mapid/
 
 ---
 
-## 🗄️ Skema Database PostgreSQL
+## Skema Database PostgreSQL
 
 Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma) dan skema DDL murni disertakan di [`backend/schema.sql`](./backend/schema.sql).
 
 ### 1. Tabel `users`
+
 - `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
 - `name`: VARCHAR(255) NOT NULL
 - `email`: VARCHAR(255) UNIQUE NOT NULL
@@ -146,6 +149,7 @@ Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma
 - `createdAt` & `updatedAt`: TIMESTAMP
 
 ### 2. Tabel `reports`
+
 - `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
 - `nama`: VARCHAR(255) NOT NULL
 - `deskripsi`: TEXT NOT NULL
@@ -157,6 +161,7 @@ Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma
 - `createdAt` & `updatedAt`: TIMESTAMP
 
 ### 3. Tabel `approval_histories` (Audit Trail)
+
 - `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
 - `reportId`: INTEGER REFERENCES reports(id) ON DELETE CASCADE
 - `approverId`: INTEGER REFERENCES users(id) ON DELETE CASCADE
@@ -166,9 +171,10 @@ Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma
 
 ---
 
-## 🚀 Panduan Menjalankan Proyek (Setup & Run)
+## Panduan Menjalankan Proyek (Setup & Run)
 
 ### 1. Prasyarat
+
 - **Node.js** v20+ atau v22+
 - **PostgreSQL** lokal yang sedang berjalan di port `5432`
 
@@ -177,11 +183,13 @@ Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma
 ### 2. Setup Database PostgreSQL
 
 1. Buat database di PostgreSQL lokal:
+
 ```sql
 CREATE DATABASE field_reports_db;
 ```
 
 2. Pastikan file `backend/.env` telah terisi kredensial PostgreSQL Anda:
+
 ```env
 PORT=5000
 NODE_ENV=development
@@ -189,7 +197,8 @@ DATABASE_URL="postgresql://postgres:root@localhost:5432/field_reports_db?schema=
 FRONTEND_URL="http://localhost:5173"
 JWT_SECRET="mapid-field-reports-secret-key-2025"
 ```
-*(Sesuaikan user dan password database Anda)*.
+
+_(Sesuaikan user dan password database Anda)_.
 
 ---
 
@@ -214,6 +223,7 @@ npm run dev
 ```
 
 Backend akan aktif di:
+
 - **API URL**: `http://localhost:5000/api`
 - **Swagger Documentation**: `http://localhost:5000/api-docs`
 
@@ -234,41 +244,46 @@ npm run dev
 ```
 
 Buka browser Anda dan akses:
+
 - **Web Dashboard**: `http://localhost:5173`
 
 ---
 
-## 📖 Dokumentasi Endpoint REST API
+## Dokumentasi Endpoint REST API
 
 ### Autentikasi (`/api/auth`)
-| Method | Endpoint | Hak Akses | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/login` | Publik | Login dengan email & password, mengembalikan JWT token |
-| `GET` | `/api/auth/me` | Authenticated | Mengambil profil user yang sedang login |
+
+| Method | Endpoint          | Hak Akses     | Deskripsi                                              |
+| :----- | :---------------- | :------------ | :----------------------------------------------------- |
+| `POST` | `/api/auth/login` | Publik        | Login dengan email & password, mengembalikan JWT token |
+| `GET`  | `/api/auth/me`    | Authenticated | Mengambil profil user yang sedang login                |
 
 ### Manajemen Pengguna (`/api/users`)
-| Method | Endpoint | Hak Akses | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/users` | Admin Only | Mengambil seluruh daftar pengguna terdaftar |
-| `POST` | `/api/users` | Admin Only | Membuat akun pengguna baru (Admin, Pelapor, Approver) |
-| `DELETE` | `/api/users/:id` | Admin Only | Menghapus akun pengguna |
+
+| Method   | Endpoint         | Hak Akses  | Deskripsi                                             |
+| :------- | :--------------- | :--------- | :---------------------------------------------------- |
+| `GET`    | `/api/users`     | Admin Only | Mengambil seluruh daftar pengguna terdaftar           |
+| `POST`   | `/api/users`     | Admin Only | Membuat akun pengguna baru (Admin, Pelapor, Approver) |
+| `DELETE` | `/api/users/:id` | Admin Only | Menghapus akun pengguna                               |
 
 ### Laporan Lapangan (`/api/reports`)
-| Method | Endpoint | Hak Akses | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/reports` | All Roles | Daftar laporan (Pelapor hanya melihat miliknya; Admin & Approver melihat semua) |
-| `GET` | `/api/reports/stats` | All Roles | Statistik ringkasan (terisolasi untuk Pelapor) |
-| `GET` | `/api/reports/:id` | All Roles | Detail laporan beserta riwayat persetujuan |
-| `POST` | `/api/reports` | Pelapor, Admin | Membuat laporan baru (status otomatis `pending`) |
-| `PUT` | `/api/reports/:id` | Pelapor, Admin | Mengedit laporan (**Pelapor hanya boleh jika status `pending`**) |
-| `PATCH` | `/api/reports/:id/status`| Approver, Admin | Menyetujui/menolak laporan & mencatat riwayat persetujuan |
-| `DELETE` | `/api/reports/:id` | Pelapor, Admin | Menghapus laporan (Pelapor hanya jika status `pending` miliknya) |
+
+| Method   | Endpoint                  | Hak Akses       | Deskripsi                                                                       |
+| :------- | :------------------------ | :-------------- | :------------------------------------------------------------------------------ |
+| `GET`    | `/api/reports`            | All Roles       | Daftar laporan (Pelapor hanya melihat miliknya; Admin & Approver melihat semua) |
+| `GET`    | `/api/reports/stats`      | All Roles       | Statistik ringkasan (terisolasi untuk Pelapor)                                  |
+| `GET`    | `/api/reports/:id`        | All Roles       | Detail laporan beserta riwayat persetujuan                                      |
+| `POST`   | `/api/reports`            | Pelapor, Admin  | Membuat laporan baru (status otomatis `pending`)                                |
+| `PUT`    | `/api/reports/:id`        | Pelapor, Admin  | Mengedit laporan (**Pelapor hanya boleh jika status `pending`**)                |
+| `PATCH`  | `/api/reports/:id/status` | Approver, Admin | Menyetujui/menolak laporan & mencatat riwayat persetujuan                       |
+| `DELETE` | `/api/reports/:id`        | Pelapor, Admin  | Menghapus laporan (Pelapor hanya jika status `pending` miliknya)                |
 
 ---
 
-## 🧪 Menguji dengan Bruno API Client
+## Menguji dengan Bruno API Client
 
 Folder `backend/bruno/` telah disediakan dan siap pakai:
+
 1. Buka aplikasi **Bruno**.
 2. Pilih **"Open Collection"** dan buka folder `backend/bruno/`.
 3. Pilih environment **Local**.
