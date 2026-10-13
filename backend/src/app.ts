@@ -31,8 +31,8 @@ export const createApp = (): Application => {
     next();
   });
 
-  // Root endpoint
-  app.get('/', (_req: Request, res: Response) => {
+  // Root & API entrypoint info
+  const rootResponseHandler = (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'UP',
       message: 'Field Reports Management API is running',
@@ -41,7 +41,11 @@ export const createApp = (): Application => {
       reports: '/api/reports',
       timestamp: new Date().toISOString(),
     });
-  });
+  };
+
+  app.get('/', rootResponseHandler);
+  app.get('/api', rootResponseHandler);
+  app.get('/api/', rootResponseHandler);
 
   // Health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {
