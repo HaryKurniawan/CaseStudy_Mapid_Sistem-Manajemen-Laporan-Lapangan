@@ -4,7 +4,7 @@ export const swaggerDocument = {
     title: 'Field Reports Management API (MAPID)',
     version: '1.0.0',
     description:
-      'Dokumentasi REST API Sistem Manajemen Laporan Lapangan. Dibuat dengan Express.js, TypeScript, PostgreSQL, dan Prisma ORM.',
+      'Dokumentasi REST API Sistem Manajemen Laporan Lapangan. Mendukung Multi-Role (Admin, Pelapor, Approver), Audit Trail Riwayat Persetujuan, dan Manajemen Pengguna. Dibuat dengan Express.js, TypeScript, PostgreSQL, dan Prisma ORM.',
     contact: {
       name: 'Fullstack Developer Team',
     },
@@ -15,319 +15,270 @@ export const swaggerDocument = {
       description: 'Local Development Server',
     },
   ],
-  tags: [
-    {
-      name: 'Reports',
-      description: 'Endpoint pengelolaan laporan lapangan (CRUD dan status approval)',
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Masukkan token JWT yang didapatkan dari login',
+      },
     },
-  ],
-  paths: {
-    '/api/reports': {
-      get: {
-        tags: ['Reports'],
-        summary: 'Tampilkan daftar laporan',
-        description: 'Mendapatkan daftar semua laporan lapangan dengan filter status dan pencarian.',
-        parameters: [
-          {
-            name: 'status',
-            in: 'query',
-            description: 'Filter status laporan',
-            required: false,
-            schema: {
-              type: 'string',
-              enum: ['all', 'pending', 'approved', 'rejected'],
-              default: 'all',
-            },
-          },
-          {
-            name: 'search',
-            in: 'query',
-            description: 'Pencarian kata kunci pada nama, deskripsi, lokasi, atau pelapor',
-            required: false,
-            schema: {
-              type: 'string',
-            },
-          },
-          {
-            name: 'page',
-            in: 'query',
-            description: 'Nomor halaman',
-            required: false,
-            schema: {
-              type: 'integer',
-              default: 1,
-            },
-          },
-          {
-            name: 'limit',
-            in: 'query',
-            description: 'Jumlah data per halaman',
-            required: false,
-            schema: {
-              type: 'integer',
-              default: 10,
-            },
-          },
-        ],
-        responses: {
-          '200': {
-            description: 'Daftar laporan berhasil diambil',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    message: { type: 'string', example: 'Daftar laporan berhasil diambil' },
-                    data: {
-                      type: 'array',
-                      items: { $ref: '#/components/schemas/Report' },
-                    },
-                    pagination: {
-                      type: 'object',
-                      properties: {
-                        total: { type: 'integer', example: 4 },
-                        page: { type: 'integer', example: 1 },
-                        limit: { type: 'integer', example: 10 },
-                        totalPages: { type: 'integer', example: 1 },
-                      },
-                    },
-                  },
-                },
-              },
+    schemas: {
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'Super Admin' },
+          email: { type: 'string', example: 'admin@mapid.io' },
+          role: { type: 'string', enum: ['admin', 'pelapor', 'approver'], example: 'admin' },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      ApprovalHistory: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          reportId: { type: 'integer', example: 2 },
+          approverId: { type: 'integer', example: 2 },
+          status: { type: 'string', enum: ['approved', 'rejected'], example: 'approved' },
+          catatan: { type: 'string', example: 'Pekerjaan telah diverifikasi dan berfungsi baik.' },
+          createdAt: { type: 'string', format: 'date-time' },
+          approver: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 2 },
+              name: { type: 'string', example: 'Bambang Verifikator' },
+              role: { type: 'string', example: 'approver' },
             },
           },
         },
       },
+      Report: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          nama: { type: 'string', example: 'Kerusakan Pipa PDAM' },
+          deskripsi: { type: 'string', example: 'Terjadi kebocoran pipa utama' },
+          lokasi: { type: 'string', example: 'Jl. Sudirman No. 45' },
+          pelapor: { type: 'string', example: 'Budi Santoso' },
+          pelaporId: { type: 'integer', example: 3 },
+          status: { type: 'string', enum: ['pending', 'approved', 'rejected'], example: 'pending' },
+          catatan: { type: 'string', nullable: true, example: null },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          approvalHistories: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/ApprovalHistory' },
+          },
+        },
+      },
+    },
+  },
+  security: [{ BearerAuth: [] }],
+  tags: [
+    { name: 'Auth', description: 'Autentikasi login dan profil pengguna' },
+    { name: 'Users', description: 'Pengelolaan akun pengguna (Admin Only)' },
+    { name: 'Reports', description: 'Pengelolaan laporan lapangan dan persetujuan' },
+  ],
+  paths: {
+    '/api/auth/login': {
       post: {
-        tags: ['Reports'],
-        summary: 'Buat laporan baru',
-        description: 'Menambahkan laporan lapangan baru ke database dengan status awal pending.',
+        tags: ['Auth'],
+        summary: 'Login pengguna',
+        security: [],
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/CreateReportRequest',
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string', example: 'admin@mapid.io' },
+                  password: { type: 'string', example: 'password123' },
+                },
               },
             },
           },
         },
         responses: {
-          '201': {
-            description: 'Laporan baru berhasil dibuat',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    message: { type: 'string', example: 'Laporan baru berhasil dibuat' },
-                    data: { $ref: '#/components/schemas/Report' },
-                  },
+          '200': { description: 'Login berhasil, mengembalikan token JWT' },
+          '401': { description: 'Email atau password salah' },
+        },
+      },
+    },
+    '/api/auth/me': {
+      get: {
+        tags: ['Auth'],
+        summary: 'Ambil profil pengguna aktif',
+        responses: {
+          '200': { description: 'Profil pengguna berhasil diambil' },
+          '401': { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/api/users': {
+      get: {
+        tags: ['Users'],
+        summary: 'Daftar semua pengguna (Admin Only)',
+        responses: {
+          '200': { description: 'Daftar pengguna berhasil diambil' },
+          '403': { description: 'Forbidden (bukan Admin)' },
+        },
+      },
+      post: {
+        tags: ['Users'],
+        summary: 'Buat akun pengguna baru (Admin Only)',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email', 'password', 'role'],
+                properties: {
+                  name: { type: 'string', example: 'Doni Pratama' },
+                  email: { type: 'string', example: 'doni@mapid.io' },
+                  password: { type: 'string', example: 'password123' },
+                  role: { type: 'string', enum: ['admin', 'pelapor', 'approver'], example: 'pelapor' },
                 },
               },
             },
           },
-          '400': {
-            description: 'Data tidak valid',
+        },
+        responses: {
+          '201': { description: 'Pengguna berhasil dibuat' },
+          '409': { description: 'Email sudah terdaftar' },
+        },
+      },
+    },
+    '/api/users/{id}': {
+      delete: {
+        tags: ['Users'],
+        summary: 'Hapus pengguna (Admin Only)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'Pengguna berhasil dihapus' },
+        },
+      },
+    },
+    '/api/reports': {
+      get: {
+        tags: ['Reports'],
+        summary: 'Daftar laporan lapangan',
+        description: 'Pelapor hanya melihat laporannya sendiri. Admin & Approver melihat semua laporan.',
+        parameters: [
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['all', 'pending', 'approved', 'rejected'] } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'sort', in: 'query', schema: { type: 'string', enum: ['newest', 'oldest'] } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          '200': { description: 'Daftar laporan' },
+        },
+      },
+      post: {
+        tags: ['Reports'],
+        summary: 'Buat laporan baru (Pelapor & Admin)',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nama', 'deskripsi'],
+                properties: {
+                  nama: { type: 'string', example: 'Tiang Listrik Miring' },
+                  deskripsi: { type: 'string', example: 'Tiang listrik condong ke arah jalan raya' },
+                  lokasi: { type: 'string', example: 'Jl. R.E. Martadinata No. 5' },
+                },
+              },
+            },
           },
+        },
+        responses: {
+          '201': { description: 'Laporan berhasil dibuat' },
         },
       },
     },
     '/api/reports/stats': {
       get: {
         tags: ['Reports'],
-        summary: 'Statistik laporan',
-        description: 'Mendapatkan ringkasan jumlah laporan total, pending, approved, dan rejected.',
+        summary: 'Statistik status laporan',
+        description: 'Pelapor hanya melihat statistik laporannya sendiri.',
         responses: {
-          '200': {
-            description: 'Statistik laporan berhasil diambil',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    message: { type: 'string', example: 'Statistik laporan berhasil diambil' },
-                    data: {
-                      type: 'object',
-                      properties: {
-                        total: { type: 'integer', example: 10 },
-                        pending: { type: 'integer', example: 4 },
-                        approved: { type: 'integer', example: 4 },
-                        rejected: { type: 'integer', example: 2 },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+          '200': { description: 'Statistik laporan' },
         },
       },
     },
     '/api/reports/{id}': {
       get: {
         tags: ['Reports'],
-        summary: 'Detail laporan',
-        description: 'Mendapatkan data lengkap laporan berdasarkan ID.',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            description: 'ID laporan',
-            schema: { type: 'integer' },
-          },
-        ],
+        summary: 'Detail laporan beserta riwayat persetujuan',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': {
-            description: 'Detail laporan berhasil diambil',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    data: { $ref: '#/components/schemas/Report' },
-                  },
+          '200': { description: 'Detail laporan' },
+          '403': { description: 'Pelapor mengakses laporan orang lain' },
+        },
+      },
+      put: {
+        tags: ['Reports'],
+        summary: 'Edit laporan (Pelapor saat status pending, atau Admin)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  nama: { type: 'string' },
+                  deskripsi: { type: 'string' },
+                  lokasi: { type: 'string' },
                 },
               },
             },
           },
-          '404': {
-            description: 'Laporan tidak ditemukan',
-          },
+        },
+        responses: {
+          '200': { description: 'Laporan berhasil diperbarui' },
+          '400': { description: 'Laporan bukan berstatus pending' },
         },
       },
       delete: {
         tags: ['Reports'],
-        summary: 'Hapus laporan',
-        description: 'Menghapus laporan berdasarkan ID.',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            description: 'ID laporan',
-            schema: { type: 'integer' },
-          },
-        ],
+        summary: 'Hapus laporan (Admin, atau Pelapor jika pending)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': {
-            description: 'Laporan berhasil dihapus',
-          },
-          '404': {
-            description: 'Laporan tidak ditemukan',
-          },
+          '200': { description: 'Laporan berhasil dihapus' },
         },
       },
     },
     '/api/reports/{id}/status': {
       patch: {
         tags: ['Reports'],
-        summary: 'Ubah status laporan (Approve / Reject)',
-        description: 'Memperbarui status laporan menjadi approved atau rejected.',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            description: 'ID laporan',
-            schema: { type: 'integer' },
-          },
-        ],
+        summary: 'Approve / Reject laporan (Approver & Admin)',
+        description: 'Approver dapat mengubah dari reject ke approve dan sebaliknya. Setiap perubahan dicatat ke riwayat persetujuan.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/UpdateReportStatusRequest',
+                type: 'object',
+                required: ['status'],
+                properties: {
+                  status: { type: 'string', enum: ['approved', 'rejected'] },
+                  catatan: { type: 'string', example: 'Laporan valid dan telah ditinjau.' },
+                },
               },
             },
           },
         },
         responses: {
-          '200': {
-            description: 'Status laporan berhasil diubah',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    message: { type: 'string', example: "Status laporan berhasil diubah menjadi 'approved'" },
-                    data: { $ref: '#/components/schemas/Report' },
-                  },
-                },
-              },
-            },
-          },
-          '400': {
-            description: 'Status tidak valid',
-          },
-          '404': {
-            description: 'Laporan tidak ditemukan',
-          },
-        },
-      },
-    },
-  },
-  components: {
-    schemas: {
-      Report: {
-        type: 'object',
-        properties: {
-          id: { type: 'integer', example: 1 },
-          nama: { type: 'string', example: 'Kerusakan Pipa Air Utama' },
-          deskripsi: {
-            type: 'string',
-            example: 'Pipa distribusi air bocor deras di persimpangan jalan.',
-          },
-          lokasi: { type: 'string', nullable: true, example: 'Jl. Sudirman No. 45' },
-          pelapor: { type: 'string', nullable: true, example: 'Budi Santoso' },
-          status: {
-            type: 'string',
-            enum: ['pending', 'approved', 'rejected'],
-            example: 'pending',
-          },
-          catatan: {
-            type: 'string',
-            nullable: true,
-            example: 'Tim teknis dijadwalkan verifikasi ke lokasi.',
-          },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' },
-        },
-      },
-      CreateReportRequest: {
-        type: 'object',
-        required: ['nama', 'deskripsi'],
-        properties: {
-          nama: { type: 'string', minLength: 3, example: 'Kerusakan Pipa Air Utama' },
-          deskripsi: {
-            type: 'string',
-            minLength: 5,
-            example: 'Pipa distribusi air bocor deras di persimpangan jalan.',
-          },
-          lokasi: { type: 'string', example: 'Jl. Sudirman No. 45' },
-          pelapor: { type: 'string', example: 'Budi Santoso' },
-        },
-      },
-      UpdateReportStatusRequest: {
-        type: 'object',
-        required: ['status'],
-        properties: {
-          status: {
-            type: 'string',
-            enum: ['approved', 'rejected'],
-            example: 'approved',
-          },
-          catatan: {
-            type: 'string',
-            example: 'Laporan disetujui, teknisi sudah ditugaskan.',
-          },
+          '200': { description: 'Status berhasil diubah dan riwayat persetujuan dicatat' },
         },
       },
     },

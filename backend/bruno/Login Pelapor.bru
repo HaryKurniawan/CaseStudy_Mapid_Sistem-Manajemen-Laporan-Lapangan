@@ -1,0 +1,24 @@
+meta {
+  name: Login Pelapor
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "pelapor1@mapid.io",
+    "password": "password123"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.token) {
+    bru.setEnvVar("token", res.body.data.token);
+  }
+}

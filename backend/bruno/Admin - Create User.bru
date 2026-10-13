@@ -1,0 +1,24 @@
+meta {
+  name: Admin - Create User
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Doni Pratama",
+    "email": "doni@mapid.io",
+    "password": "password123",
+    "role": "pelapor"
+  }
+}

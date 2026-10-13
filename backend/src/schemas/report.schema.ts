@@ -12,6 +12,19 @@ export const createReportSchema = z.object({
   pelapor: z.string().max(255).optional().nullable(),
 });
 
+export const updateReportSchema = z.object({
+  nama: z
+    .string()
+    .min(3, 'Nama laporan minimal 3 karakter')
+    .max(255, 'Nama laporan maksimal 255 karakter')
+    .optional(),
+  deskripsi: z
+    .string()
+    .min(5, 'Deskripsi laporan minimal 5 karakter')
+    .optional(),
+  lokasi: z.string().max(255).optional().nullable(),
+});
+
 export const updateReportStatusSchema = z.object({
   status: z.enum(['approved', 'rejected'] as const),
   catatan: z.string().optional().nullable(),
@@ -26,5 +39,6 @@ export const queryReportSchema = z.object({
 });
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
+export type UpdateReportInput = z.infer<typeof updateReportSchema>;
 export type UpdateReportStatusInput = z.infer<typeof updateReportStatusSchema>;
 export type QueryReportInput = z.infer<typeof queryReportSchema>;

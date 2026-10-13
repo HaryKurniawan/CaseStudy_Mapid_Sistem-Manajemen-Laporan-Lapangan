@@ -1,20 +1,23 @@
 meta {
   name: Create Report
   type: http
-  seq: 3
+  seq: 11
 }
 
 post {
   url: {{baseUrl}}/api/reports
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
   {
-    "nama": "Pohon Tumbang di Simpang Lima",
-    "deskripsi": "Batang pohon besar roboh menutupi separuh jalan akibat angin kencang.",
-    "lokasi": "Simpang Lima, Kota Semarang",
-    "pelapor": "Bambang Wijaya"
+    "nama": "Papan Reklame Rusak Diterpa Angin Kencang",
+    "deskripsi": "Rangka besi reklame copot dan berpotensi jatuh ke trotoar pejalan kaki.",
+    "lokasi": "Jl. Basuki Rahmat No. 88, Surabaya"
   }
 }

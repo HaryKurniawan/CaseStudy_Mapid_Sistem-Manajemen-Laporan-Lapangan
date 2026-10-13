@@ -1,18 +1,22 @@
 meta {
   name: Approve Report
   type: http
-  seq: 4
+  seq: 12
 }
 
 patch {
   url: {{baseUrl}}/api/reports/1/status
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
   {
     "status": "approved",
-    "catatan": "Laporan telah diverifikasi oleh tim lapangan dan disetujui untuk tindakan segera."
+    "catatan": "Laporan telah diverifikasi oleh petugas verifikator dan disetujui untuk tindakan segera."
   }
 }

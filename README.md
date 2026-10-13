@@ -2,30 +2,64 @@
 
 Aplikasi web fullstack untuk mengelola dan memverifikasi laporan lapangan, terdiri dari **REST API backend** dan **dashboard interaktif frontend**. Proyek ini dibuat untuk memenuhi studi kasus **Fullstack Developer - MAPID**.
 
+Aplikasi ini telah mengimplementasikan sistem **Multi-Role RBAC (Admin, Approver, Pelapor)**, **Audit Trail Riwayat Persetujuan**, **Pengelolaan Akun Terpusat oleh Admin**, serta **Kontrol Hak Akses Laporan Khusus Pelapor**.
+
 ---
 
-## Ringkasan Teknologi (Tech Stack)
+## 🔑 Akun Demo (Untuk Evaluasi Cepat)
+
+Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi tanpa registrasi manual, telah disediakan akun demo untuk masing-masing peran (role). Anda juga dapat menggunakan fitur **1-Klik Masuk** di halaman login:
+
+| Peran (Role) | Email | Password | Nama Pengguna | Hak Akses & Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin** | `admin@mapid.io` | `password123` | Super Admin | Akses penuh: mengelola akun pengguna (buat & hapus user), memantau seluruh laporan, mengedit laporan, menyetujui/menolak, dan menghapus laporan. |
+| **Approver** | `approver@mapid.io` | `password123` | Bambang Verifikator | Memantau seluruh laporan, melakukan verifikasi persetujuan (**Approve** / **Reject**), mengubah keputusan (dari reject ke approve dan sebaliknya), serta mencatat riwayat keputusan. |
+| **Pelapor 1** | `pelapor1@mapid.io` | `password123` | Budi Santoso | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Budi), serta mengedit laporan selama statusnya masih `pending`. |
+| **Pelapor 2** | `pelapor2@mapid.io` | `password123` | Siti Rahma | Membuat laporan baru, hanya melihat & memantau laporannya sendiri (Siti). Digunakan untuk menguji isolasi data antar-pelapor. |
+
+---
+
+## ✨ Fitur & Aturan Bisnis (Studi Kasus)
+
+1. **Role Pengguna**:
+   - **Admin**: Mengelola pengguna baru dan memiliki kontrol penuh atas seluruh laporan.
+   - **Approver**: Melakukan verifikasi dan keputusan status laporan lapangan.
+   - **Pelapor**: Mengirimkan dan memantau status laporan lapangan.
+2. **Pengelolaan Akun Terpusat**:
+   - Akun pengguna dibuat langsung oleh **Admin** melalui menu *Kelola Akun*, bukan melalui halaman registrasi publik/mandiri.
+3. **Akses Laporan Terisolasi**:
+   - **Pelapor hanya dapat melihat laporan yang dibuatnya sendiri** baik pada daftar tabel, pencarian, filter, maupun ringkasan statistik.
+   - Admin dan Approver dapat melihat seluruh laporan dari semua pelapor.
+4. **Riwayat Persetujuan (Audit Trail)**:
+   - Setiap keputusan verifikasi (**Approve** atau **Reject**) otomatis mencatat identitas verifikator (nama & role), catatan verifikasi, serta waktu keputusan (timestamp).
+   - Riwayat dapat dilihat secara transparan melalui Modal Detail Laporan.
+5. **Aturan Edit & Perubahan Status Laporan**:
+   - **Pelapor** masih diperbolehkan mengedit isi laporan (nama, deskripsi, lokasi) **selama statusnya masih `pending`**. Laporan yang sudah disetujui atau ditolak terkunci dari perubahan oleh pelapor.
+   - **Approver** memiliki fleksibilitas untuk mengubah keputusan status dari `reject` ke `approve` dan sebaliknya kapan saja.
+
+---
+
+## 🛠️ Ringkasan Teknologi (Tech Stack)
 
 ### **Backend**
-
 - **Runtime & Framework**: [Node.js](https://nodejs.org/) v22+, [Express.js](https://expressjs.com/) (TypeScript)
 - **Database**: [PostgreSQL](https://www.postgresql.org/) (Lokal)
 - **ORM**: [Prisma ORM](https://www.prisma.io/)
+- **Autentikasi & Keamanan**: JWT (JSON Web Token), `bcryptjs`
 - **Validasi Data**: [Zod](https://zod.dev/)
 - **Dokumentasi API**: [Swagger UI / OpenAPI 3.0](https://swagger.io/) (`/api-docs`)
 - **API Client Collection**: [Bruno](https://www.usebruno.com/) (Folder `backend/bruno/`)
-- **File Skema Database**: File SQL DDL mentah disertakan di [`backend/schema.sql`](./backend/schema.sql)
+- **File Skema Database**: File SQL DDL mentah di [`backend/schema.sql`](./backend/schema.sql)
 
 ### **Frontend**
-
 - **Framework**: [React 18](https://react.dev/) dengan [Vite](https://vitejs.dev/) & TypeScript
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) untuk seluruh tampilan layout, tabel, cards, badges, navbar, dan tipografi
-- **Komponen Pop-up**: [Ant Design (antd)](https://ant.design/) _khusus untuk pop-up saja_ (Modal Form Tambah Laporan, Modal Review Approve/Reject, Modal Detail Laporan, Popconfirm Hapus, serta Message Toasts)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) untuk layout, dashboard, kartu statistik, dan antarmuka login responsif
+- **Komponen Pop-up**: [Ant Design (antd)](https://ant.design/) *khusus untuk pop-up saja* (Modal Tambah Laporan, Modal Edit Laporan, Modal Review Status, Modal Detail & Riwayat Persetujuan, Popconfirm Hapus, Message Toasts)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ---
 
-## Struktur Direktori
+## 📁 Struktur Direktori
 
 ```text
 mapid/
@@ -34,126 +68,128 @@ mapid/
 │   ├── pre-commit                    # Validasi lint & typecheck staged files (lint-staged)
 │   └── pre-push                      # Validasi build backend & frontend sebelum push
 ├── backend/
-│   ├── bruno/                        # Koleksi Bruno API Client
-│   │   ├── bruno.json                # Konfigurasi koleksi Bruno
-│   │   ├── environments/
-│   │   │   └── Local.bru             # Environment URL (http://localhost:5000)
-│   │   ├── Get All Reports.bru       # Request daftar laporan
-│   │   ├── Get Report Stats.bru      # Request statistik status
-│   │   ├── Get Report by ID.bru      # Request detail laporan
-│   │   ├── Create Report.bru         # Request buat laporan baru
-│   │   ├── Approve Report.bru        # Request ubah status ke approved
-│   │   └── Reject Report.bru         # Request ubah status ke rejected
+│   ├── bruno/                        # Koleksi Bruno API Client (Auto JWT Token)
+│   │   ├── Login Admin.bru
+│   │   ├── Login Approver.bru
+│   │   ├── Login Pelapor.bru
+│   │   ├── Get Current User Profile.bru
+│   │   ├── Admin - Create User.bru
+│   │   ├── Admin - Get All Users.bru
+│   │   ├── Get All Reports.bru
+│   │   ├── Get Report Stats.bru
+│   │   ├── Create Report.bru
+│   │   ├── Update Report (Pending).bru
+│   │   ├── Approve Report.bru
+│   │   └── Reject Report.bru
 │   ├── prisma/
 │   │   ├── schema.prisma             # Skema data model Prisma
 │   │   └── seed/
-│   │       └── seed.ts               # Seeder data awal database
+│   │       └── seed.ts               # Seeder 4 akun demo, laporan awal, & riwayat persetujuan
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── prisma.ts             # Inisialisasi Prisma Client
+│   │   │   └── prisma.ts             # Prisma Client instance
 │   │   ├── controllers/
-│   │   │   ├── report/               # 1 file per fungsi controller
-│   │   │   │   ├── createReport.controller.ts       # Handler buat laporan baru
-│   │   │   │   ├── getReports.controller.ts         # Handler list laporan (filter, search, sort)
-│   │   │   │   ├── getReportById.controller.ts      # Handler detail laporan by ID
-│   │   │   │   ├── updateReportStatus.controller.ts # Handler update status & catatan
-│   │   │   │   ├── deleteReport.controller.ts       # Handler hapus laporan by ID
-│   │   │   │   ├── getReportStats.controller.ts     # Handler ringkasan statistik status
-│   │   │   │   └── index.ts                         # Barrel export modul controller
-│   │   │   └── report.controller.ts                 # Facade & backward compatibility export
+│   │   │   ├── auth/                 # Controller login & get profile (me)
+│   │   │   ├── user/                 # Controller manajemen user oleh Admin
+│   │   │   └── report/               # Controller laporan & persetujuan
 │   │   ├── middlewares/
-│   │   │   └── errorHandler.ts       # Error handler & 404 handler
+│   │   │   ├── auth.middleware.ts    # JWT verification & Role-Based Authorization
+│   │   │   └── errorHandler.ts       # Global error & 404 handler
 │   │   ├── routes/
-│   │   │   └── report.routes.ts      # Routing REST API
-│   │   ├── schemas/
-│   │   │   └── report.schema.ts      # Skema validasi Zod
+│   │   │   ├── auth.routes.ts        # Rute /api/auth
+│   │   │   ├── user.routes.ts        # Rute /api/users
+│   │   │   └── report.routes.ts      # Rute /api/reports
+│   │   ├── schemas/                  # Zod validation schemas
 │   │   ├── swagger/
 │   │   │   └── swaggerDoc.ts         # Spesifikasi OpenAPI 3.0 Swagger
 │   │   ├── app.ts                    # Inisialisasi Express & middlewares
 │   │   └── index.ts                  # Server listener entry point
-│   ├── schema.sql                    # Skema database PostgreSQL murni (DDL)
-│   ├── .commitlintrc.json            # Konfigurasi commitlint backend
-│   ├── .lintstagedrc.cjs             # Konfigurasi lint-staged backend
-│   ├── .env                          # Konfigurasi environment backend
+│   ├── schema.sql                    # Skema database PostgreSQL mentah (DDL)
 │   ├── .env.example
-│   ├── package.json
-│   └── tsconfig.json
+│   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx            # Header & tombol aksi cepat
+│   │   │   ├── LoginScreen.tsx       # Halaman login & kartu 1-klik akun demo
+│   │   │   ├── Navbar.tsx            # Header, tab menu Admin, profil, & logout
+│   │   │   ├── UserManagementView.tsx# Menu Admin untuk mengelola & membuat akun pengguna
 │   │   │   ├── StatsOverview.tsx     # Kartu statistik ringkasan status
-│   │   │   ├── ReportFilter.tsx      # Tab status & sort Terbaru / Terlama
-│   │   │   ├── ReportTable.tsx       # Tabel laporan dengan Tailwind & Antd Popconfirm
-│   │   │   ├── CreateReportModal.tsx # Ant Design Modal pop-up tambah laporan
-│   │   │   ├── StatusChangeModal.tsx # Ant Design Modal pop-up Approve / Reject
-│   │   │   └── ReportDetailModal.tsx # Ant Design Modal pop-up detail laporan
+│   │   │   ├── ReportFilter.tsx      # Tab status & filter sort
+│   │   │   ├── ReportTable.tsx       # Tabel laporan dengan kontrol hak akses
+│   │   │   ├── CreateReportModal.tsx # Antd Modal pop-up tambah laporan
+│   │   │   ├── EditReportModal.tsx   # Antd Modal pop-up edit laporan pending
+│   │   │   ├── StatusChangeModal.tsx # Antd Modal pop-up Approve / Reject
+│   │   │   └── ReportDetailModal.tsx # Antd Modal detail & timeline riwayat persetujuan
 │   │   ├── services/
-│   │   │   └── api.ts                # Service integrasi fetch API
+│   │   │   └── api.ts                # Service API client dengan Bearer Token
 │   │   ├── types/
 │   │   │   └── report.ts             # Definisi TypeScript interfaces
-│   │   ├── App.tsx                   # Main Dashboard component
-│   │   ├── main.tsx
+│   │   ├── App.tsx                   # State management utama & router dashboard
 │   │   └── index.css                 # Tailwind CSS directives
-│   ├── .commitlintrc.json            # Konfigurasi commitlint frontend
-│   ├── .lintstagedrc.js              # Konfigurasi lint-staged frontend
-│   ├── .env                          # Konfigurasi environment frontend
 │   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── vite.config.ts
+│   └── package.json
 └── README.md                         # Panduan instalasi dan penggunaan
 ```
 
 ---
 
-## Skema Database Model
+## 🗄️ Skema Database PostgreSQL
 
-Skema tabel database didefinisikan secara deklaratif menggunakan **Prisma ORM** (`backend/prisma/schema.prisma`) dan dapat langsung disinkronkan ke PostgreSQL dengan `npx prisma db push`. File DDL murni juga tetap disediakan di [`backend/schema.sql`](./backend/schema.sql) sebagai referensi DDL mentah.
+Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma) dan skema DDL murni disertakan di [`backend/schema.sql`](./backend/schema.sql).
 
-Struktur tabel database sesuai kriteria studi kasus:
+### 1. Tabel `users`
+- `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+- `name`: VARCHAR(255) NOT NULL
+- `email`: VARCHAR(255) UNIQUE NOT NULL
+- `password`: VARCHAR(255) NOT NULL (bcrypt hash)
+- `role`: ENUM ('admin', 'pelapor', 'approver') NOT NULL DEFAULT 'pelapor'
+- `createdAt` & `updatedAt`: TIMESTAMP
 
-- `nama`: Nama laporan (VARCHAR 255, NOT NULL)
-- `deskripsi`: Penjelasan detail permasalahan (TEXT, NOT NULL)
-- `lokasi`: Lokasi kejadian di lapangan (VARCHAR 255, NULLABLE)
-- `pelapor`: Nama petugas / pelapor (VARCHAR 255, NULLABLE)
-- `status`: Enum (`pending`, `approved`, `rejected`) dengan nilai default `'pending'`
-- `catatan`: Catatan verifikasi saat disetujui / ditolak (TEXT, NULLABLE)
-- `createdAt` & `updatedAt`: Timestamp otomatis
+### 2. Tabel `reports`
+- `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+- `nama`: VARCHAR(255) NOT NULL
+- `deskripsi`: TEXT NOT NULL
+- `lokasi`: VARCHAR(255) NULLABLE
+- `pelapor`: VARCHAR(255) NULLABLE (Nama pelapor)
+- `pelaporId`: INTEGER REFERENCES users(id) ON DELETE SET NULL
+- `status`: ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending'
+- `catatan`: TEXT NULLABLE (Catatan verifikasi terakhir)
+- `createdAt` & `updatedAt`: TIMESTAMP
+
+### 3. Tabel `approval_histories` (Audit Trail)
+- `id`: INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+- `reportId`: INTEGER REFERENCES reports(id) ON DELETE CASCADE
+- `approverId`: INTEGER REFERENCES users(id) ON DELETE CASCADE
+- `status`: ENUM ('pending', 'approved', 'rejected') NOT NULL
+- `catatan`: TEXT NULLABLE
+- `createdAt`: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ---
 
-## Panduan Menjalankan Proyek (Setup & Run)
+## 🚀 Panduan Menjalankan Proyek (Setup & Run)
 
 ### 1. Prasyarat
-
-- **Node.js** (v18 ke atas disarankan v20/v22)
-- **PostgreSQL lokal** yang sedang berjalan di port `5432`
+- **Node.js** v20+ atau v22+
+- **PostgreSQL** lokal yang sedang berjalan di port `5432`
 
 ---
 
 ### 2. Setup Database PostgreSQL
 
-1. Buat database kosong di PostgreSQL lokal:
-
+1. Buat database di PostgreSQL lokal:
 ```sql
 CREATE DATABASE field_reports_db;
 ```
 
 2. Pastikan file `backend/.env` telah terisi kredensial PostgreSQL Anda:
-
 ```env
 PORT=5000
 NODE_ENV=development
 DATABASE_URL="postgresql://postgres:root@localhost:5432/field_reports_db?schema=public"
 FRONTEND_URL="http://localhost:5173"
+JWT_SECRET="mapid-field-reports-secret-key-2025"
 ```
-
-_(Sesuaikan `postgres:root` dengan username dan password PostgreSQL lokal Anda)_.
-
-> **Tips Penting**: Anda **tidak perlu** mengimpor atau mengeksekusi file SQL manual. Tabel dan enum database akan otomatis dibuat dan disinkronkan langsung dari Prisma ORM menggunakan perintah `npx prisma db push`.
+*(Sesuaikan user dan password database Anda)*.
 
 ---
 
@@ -167,19 +203,18 @@ cd backend
 # 1. Install dependensi
 npm install
 
-# 2. Sinkronisasi skema langsung dari ORM ke PostgreSQL (otomatis membuat tabel & enum)
+# 2. Sinkronisasi skema ke database PostgreSQL
 npx prisma db push
 
-# 3. (Opsional) Isi database dengan data contoh realistis
+# 3. Jalankan Seeder (Membuat 4 Akun Demo, Laporan Contoh, & Riwayat Persetujuan)
 npm run prisma:seed
 
 # 4. Jalankan backend development server
 npm run dev
 ```
 
-Server backend akan berjalan di:
-
-- **API URL**: `http://localhost:5000/api/reports`
+Backend akan aktif di:
+- **API URL**: `http://localhost:5000/api`
 - **Swagger Documentation**: `http://localhost:5000/api-docs`
 
 ---
@@ -198,95 +233,44 @@ npm install
 npm run dev
 ```
 
-Dashboard frontend akan aktif di:
-
+Buka browser Anda dan akses:
 - **Web Dashboard**: `http://localhost:5173`
 
 ---
 
-## Dokumentasi Endpoint REST API
+## 📖 Dokumentasi Endpoint REST API
 
-| Method   | Endpoint                  | Deskripsi                                                                              |
-| -------- | ------------------------- | -------------------------------------------------------------------------------------- |
-| `GET`    | `/api/reports`            | Mengambil seluruh daftar laporan (mendukung query `status`, `search`, `page`, `limit`) |
-| `GET`    | `/api/reports/stats`      | Mengambil ringkasan jumlah status (total, pending, approved, rejected)                 |
-| `GET`    | `/api/reports/:id`        | Mengambil detail laporan tunggal berdasarkan ID                                        |
-| `POST`   | `/api/reports`            | Membuat laporan baru (status otomatis default `pending`)                               |
-| `PATCH`  | `/api/reports/:id/status` | Mengubah status laporan menjadi `approved` atau `rejected` (beserta catatan)           |
-| `DELETE` | `/api/reports/:id`        | Menghapus laporan berdasarkan ID                                                       |
+### Autentikasi (`/api/auth`)
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | Publik | Login dengan email & password, mengembalikan JWT token |
+| `GET` | `/api/auth/me` | Authenticated | Mengambil profil user yang sedang login |
 
-### Contoh Request & Response
+### Manajemen Pengguna (`/api/users`)
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/users` | Admin Only | Mengambil seluruh daftar pengguna terdaftar |
+| `POST` | `/api/users` | Admin Only | Membuat akun pengguna baru (Admin, Pelapor, Approver) |
+| `DELETE` | `/api/users/:id` | Admin Only | Menghapus akun pengguna |
 
-#### 1. Buat Laporan Baru (`POST /api/reports`)
-
-**Body (JSON):**
-
-```json
-{
-  "nama": "Pohon Tumbang di Simpang Lima",
-  "deskripsi": "Batang pohon besar roboh menutupi badan jalan pasca hujan lebat.",
-  "lokasi": "Simpang Lima, Kota Semarang",
-  "pelapor": "Bambang Wijaya"
-}
-```
-
-#### 2. Ubah Status Laporan (`PATCH /api/reports/:id/status`)
-
-**Body (JSON):**
-
-```json
-{
-  "status": "approved",
-  "catatan": "Laporan telah diverifikasi oleh tim lapangan dan disetujui untuk perbaikan segera."
-}
-```
+### Laporan Lapangan (`/api/reports`)
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/reports` | All Roles | Daftar laporan (Pelapor hanya melihat miliknya; Admin & Approver melihat semua) |
+| `GET` | `/api/reports/stats` | All Roles | Statistik ringkasan (terisolasi untuk Pelapor) |
+| `GET` | `/api/reports/:id` | All Roles | Detail laporan beserta riwayat persetujuan |
+| `POST` | `/api/reports` | Pelapor, Admin | Membuat laporan baru (status otomatis `pending`) |
+| `PUT` | `/api/reports/:id` | Pelapor, Admin | Mengedit laporan (**Pelapor hanya boleh jika status `pending`**) |
+| `PATCH` | `/api/reports/:id/status`| Approver, Admin | Menyetujui/menolak laporan & mencatat riwayat persetujuan |
+| `DELETE` | `/api/reports/:id` | Pelapor, Admin | Menghapus laporan (Pelapor hanya jika status `pending` miliknya) |
 
 ---
 
-## Cara Menggunakan Swagger & Bruno
+## 🧪 Menguji dengan Bruno API Client
 
-### 1. Swagger UI
-
-Buka browser dan akses alamat:
-
-```
-http://localhost:5000/api-docs
-```
-
-Anda dapat langsung mencoba semua endpoint (Try it out) secara interaktif dari antarmuka Swagger.
-
-### 2. Bruno API Client
-
-1. Buka aplikasi **Bruno** (bisa diunduh gratis dari [usebruno.com](https://www.usebruno.com/)).
-2. Pilih menu **"Open Collection"**.
-3. Arahkan dan pilih folder `backend/bruno/`.
-4. Pilih environment **Local** (`baseUrl: http://localhost:5000`).
-5. Jalankan permintaan API yang sudah siap pakai:
-   - `Get All Reports`
-   - `Get Report Stats`
-   - `Create Report`
-   - `Approve Report`
-   - `Reject Report`
-   - `Get Report by ID`
-
----
-
-## Kriteria Penilaian yang Dipenuhi
-
-1. **Backend**:
-   - Dibuat dengan Express.js & TypeScript.
-   - Database PostgreSQL lokal dengan Prisma ORM.
-   - File skema database PostgreSQL disertakan di `backend/schema.sql`.
-   - Data laporan memiliki `nama`, `deskripsi`, `status` (`pending`/`approved`/`rejected`), `lokasi`, `pelapor`, dan `catatan`.
-   - Endpoints lengkap: buat laporan, tampilkan laporan, dan ubah status menjadi `approved` atau `rejected`.
-2. **Frontend**:
-   - Dibuat dengan React (Vite) & TypeScript.
-   - Menampilkan daftar laporan dalam tabel lengkap dengan status badge.
-   - Form tambah laporan tersedia dengan validasi input.
-   - Tombol **Approve** dan **Reject** tersedia pada setiap baris laporan dengan konfirmasi pop-up.
-3. **Tambahan**:
-   - Menggunakan **Bruno** collection (`backend/bruno/`).
-   - Menggunakan **Swagger UI** (`/api-docs`).
-   - Menggunakan **Tailwind CSS** untuk seluruh styling layout & komponen.
-   - Menggunakan **Ant Design (antd)** _hanya untuk pop up saja_ (Modal form, Modal status confirm, Popconfirm delete, Message alerts).
-   - Menggunakan **Husky**, **lint-staged**, dan **Commitlint** untuk automated Git hooks (`pre-commit`, `commit-msg`, dan `pre-push` build checks).
+Folder `backend/bruno/` telah disediakan dan siap pakai:
+1. Buka aplikasi **Bruno**.
+2. Pilih **"Open Collection"** dan buka folder `backend/bruno/`.
+3. Pilih environment **Local**.
+4. Jalankan request `Login Admin`, `Login Approver`, atau `Login Pelapor`. Skrip otomatis akan menyimpan token ke variabel environment `{{token}}`.
+5. Anda dapat langsung menjalankan seluruh request laporan, audit approval, dan manajemen user.

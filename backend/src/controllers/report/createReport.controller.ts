@@ -5,19 +5,27 @@ import { ReportStatus } from '@prisma/client';
 
 /**
  * Membuat laporan baru (status otomatis 'pending')
+ * Terhubung langsung dengan akun pengguna yang sedang login
  * POST /api/reports
  */
 export const createReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const validatedData = createReportSchema.parse(req.body);
 
+    const pelaporName = req.user ? req.user.name : validatedData.pelapor || null;
+    const pelaporId = req.user ? req.user.id : null;
+
     const newReport = await prisma.report.create({
       data: {
         nama: validatedData.nama,
         deskripsi: validatedData.deskripsi,
         lokasi: validatedData.lokasi || null,
-        pelapor: validatedData.pelapor || null,
+        pelapor: pelaporName,
+        pelaporId,
         status: ReportStatus.pending,
+      },
+      include: {
+        approvalHistories: true,
       },
     });
 

@@ -2,6 +2,8 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import { swaggerDocument } from './swagger/swaggerDoc.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
@@ -41,7 +43,9 @@ export const createApp = (): Application => {
   // Swagger Documentation
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-  // Rute API Laporan
+  // Rute API Autentikasi, Pengguna, dan Laporan
+  app.use('/api/auth', authRoutes);
+  app.use('/api/users', userRoutes);
   app.use('/api/reports', reportRoutes);
 
   // 404 Handler & Error Handler

@@ -1,0 +1,23 @@
+meta {
+  name: Update Report (Pending)
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/reports/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "Kerusakan Pipa Distribusi Air PDAM (Revisi)",
+    "deskripsi": "Revisi deskripsi: Kebocoran pipa sudah mulai ditangani petugas sementara.",
+    "lokasi": "Jl. Sudirman No. 45, Jakarta Pusat"
+  }
+}

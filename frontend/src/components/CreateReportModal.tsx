@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
-import { CreateReportPayload } from '../types/report';
+import { CreateReportPayload, User as UserType } from '../types/report';
 import { PlusCircle, MapPin, User, FileText, AlignLeft } from 'lucide-react';
 
 interface CreateReportModalProps {
   open: boolean;
+  currentUser: UserType | null;
   onClose: () => void;
   onSubmit: (payload: CreateReportPayload) => Promise<void>;
   loading: boolean;
@@ -12,6 +13,7 @@ interface CreateReportModalProps {
 
 export const CreateReportModal: React.FC<CreateReportModalProps> = ({
   open,
+  currentUser,
   onClose,
   onSubmit,
   loading,
@@ -21,6 +23,16 @@ export const CreateReportModal: React.FC<CreateReportModalProps> = ({
   const [lokasi, setLokasi] = useState('');
   const [pelapor, setPelapor] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setNama('');
+      setDeskripsi('');
+      setLokasi('');
+      setPelapor(currentUser ? currentUser.name : '');
+      setErrorMsg(null);
+    }
+  }, [open, currentUser]);
 
   const resetForm = () => {
     setNama('');
@@ -54,7 +66,7 @@ export const CreateReportModal: React.FC<CreateReportModalProps> = ({
         nama: nama.trim(),
         deskripsi: deskripsi.trim(),
         lokasi: lokasi.trim() || undefined,
-        pelapor: pelapor.trim() || undefined,
+        pelapor: pelapor.trim() || currentUser?.name || undefined,
       });
       resetForm();
       onClose();
@@ -161,7 +173,8 @@ export const CreateReportModal: React.FC<CreateReportModalProps> = ({
                   placeholder="Contoh: Budi Santoso"
                   value={pelapor}
                   onChange={(e) => setPelapor(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  disabled={currentUser?.role === 'pelapor'}
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:bg-slate-100 disabled:text-slate-600"
                 />
               </div>
             </div>

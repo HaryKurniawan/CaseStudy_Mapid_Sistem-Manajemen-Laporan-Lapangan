@@ -12,13 +12,16 @@ import {
   User,
   Calendar,
   AlertCircle,
+  Edit3,
 } from 'lucide-react';
-import { Report } from '../types/report';
+import { Report, User as UserType } from '../types/report';
 
 interface ReportTableProps {
   reports: Report[];
   loading: boolean;
+  currentUser: UserType | null;
   onViewDetail: (report: Report) => void;
+  onEditReport: (report: Report) => void;
   onOpenStatusModal: (report: Report, status: 'approved' | 'rejected') => void;
   onDeleteReport: (id: number) => void;
 }
@@ -26,7 +29,9 @@ interface ReportTableProps {
 export const ReportTable: React.FC<ReportTableProps> = ({
   reports,
   loading,
+  currentUser,
   onViewDetail,
+  onEditReport,
   onOpenStatusModal,
   onDeleteReport,
 }) => {
@@ -89,11 +94,17 @@ export const ReportTable: React.FC<ReportTableProps> = ({
         </div>
         <h3 className="text-base font-semibold text-slate-800">Tidak ada laporan ditemukan</h3>
         <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-          Tidak ada data laporan yang cocok dengan filter atau kata kunci pencarian Anda.
+          {currentUser?.role === 'pelapor'
+            ? 'Anda belum memiliki laporan yang cocok dengan filter atau kata kunci ini.'
+            : 'Tidak ada data laporan yang cocok dengan filter atau kata kunci pencarian Anda.'}
         </p>
       </div>
     );
   }
+
+  const isPelapor = currentUser?.role === 'pelapor';
+  const isApprover = currentUser?.role === 'approver';
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -110,122 +121,152 @@ export const ReportTable: React.FC<ReportTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
-            {reports.map((report) => (
-              <tr
-                key={report.id}
-                className="hover:bg-slate-50/70 transition-colors group"
-              >
-                {/* ID */}
-                <td className="py-4 px-4 font-mono text-xs font-semibold text-slate-500">
-                  #{report.id}
-                </td>
+            {reports.map((report) => {
+              const canEdit = (isPelapor || isAdmin) && report.status === 'pending';
+              const canDelete = isAdmin || (isPelapor && report.status === 'pending');
+              const canApproveReject = isApprover || isAdmin;
 
-                {/* Nama & Deskripsi */}
-                <td className="py-4 px-4">
-                  <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {report.nama}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 max-w-md">
-                    {report.deskripsi}
-                  </p>
-                  {report.catatan && (
-                    <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                      <span className="font-medium text-slate-600">Catatan:</span> {report.catatan}
+              return (
+                <tr
+                  key={report.id}
+                  className="hover:bg-slate-50/70 transition-colors group"
+                >
+                  {/* ID */}
+                  <td className="py-4 px-4 font-mono text-xs font-semibold text-slate-500">
+                    #{report.id}
+                  </td>
+
+                  {/* Nama & Deskripsi */}
+                  <td className="py-4 px-4">
+                    <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {report.nama}
                     </div>
-                  )}
-                </td>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 max-w-md">
+                      {report.deskripsi}
+                    </p>
+                    {report.catatan && (
+                      <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                        <span className="font-medium text-slate-600">Catatan:</span> {report.catatan}
+                      </div>
+                    )}
+                  </td>
 
-                {/* Lokasi & Pelapor */}
-                <td className="py-4 px-4 text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-700">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate max-w-[180px]">{report.lokasi || '-'}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-500 mt-1">
-                    <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate max-w-[180px]">{report.pelapor || 'Anonim'}</span>
-                  </div>
-                </td>
+                  {/* Lokasi & Pelapor */}
+                  <td className="py-4 px-4 text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate max-w-[180px]">{report.lokasi || '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-500 mt-1">
+                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate max-w-[180px]">{report.pelapor || 'Anonim'}</span>
+                    </div>
+                  </td>
 
-                {/* Status Badge */}
-                <td className="py-4 px-4 whitespace-nowrap">
-                  {getStatusBadge(report.status)}
-                </td>
+                  {/* Status Badge */}
+                  <td className="py-4 px-4 whitespace-nowrap">
+                    {getStatusBadge(report.status)}
+                  </td>
 
-                {/* Tanggal */}
-                <td className="py-4 px-4 text-xs text-slate-500 whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{formatDate(report.createdAt)}</span>
-                  </div>
-                </td>
+                  {/* Tanggal */}
+                  <td className="py-4 px-4 text-xs text-slate-500 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{formatDate(report.createdAt)}</span>
+                    </div>
+                  </td>
 
-                {/* Aksi: Approve, Reject, Detail, Hapus */}
-                <td className="py-4 px-4 text-right whitespace-nowrap">
-                  <div className="inline-flex items-center gap-1.5">
-                    {/* Tombol Detail */}
-                    <button
-                      type="button"
-                      onClick={() => onViewDetail(report)}
-                      title="Lihat Detail"
-                      className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-
-                    {/* Tombol Approve (Buka Modal / Pop-up Approval) */}
-                    <button
-                      type="button"
-                      onClick={() => onOpenStatusModal(report, 'approved')}
-                      disabled={report.status === 'approved'}
-                      title="Setujui Laporan (Approve)"
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        report.status === 'approved'
-                          ? 'opacity-40 bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-200'
-                      }`}
-                    >
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>Approve</span>
-                    </button>
-
-                    {/* Tombol Reject (Buka Modal / Pop-up Rejection) */}
-                    <button
-                      type="button"
-                      onClick={() => onOpenStatusModal(report, 'rejected')}
-                      disabled={report.status === 'rejected'}
-                      title="Tolak Laporan (Reject)"
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        report.status === 'rejected'
-                          ? 'opacity-40 bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-200'
-                      }`}
-                    >
-                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>Reject</span>
-                    </button>
-
-                    {/* Tombol Hapus dengan Ant Design Popconfirm (Pop-up) */}
-                    <Popconfirm
-                      title="Hapus Laporan Lapangan"
-                      description="Apakah Anda yakin ingin menghapus laporan ini secara permanen?"
-                      onConfirm={() => onDeleteReport(report.id)}
-                      okText="Ya, Hapus"
-                      cancelText="Batal"
-                      okButtonProps={{ danger: true }}
-                    >
+                  {/* Aksi */}
+                  <td className="py-4 px-4 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5">
+                      {/* Tombol Detail */}
                       <button
                         type="button"
-                        title="Hapus Laporan"
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer ml-1"
+                        onClick={() => onViewDetail(report)}
+                        title="Lihat Detail & Riwayat"
+                        className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Eye className="w-4 h-4" />
                       </button>
-                    </Popconfirm>
-                  </div>
-                </td>
-              </tr>
-            ))}
+
+                      {/* Tombol Edit (Pelapor saat pending, atau Admin) */}
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => onEditReport(report)}
+                          title="Edit Laporan (Status Pending)"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                      )}
+
+                      {/* Tombol Approve & Reject (Approver & Admin) */}
+                      {canApproveReject && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => onOpenStatusModal(report, 'approved')}
+                            title={
+                              report.status === 'approved'
+                                ? 'Laporan sudah disetujui (Klik untuk ubah catatan)'
+                                : 'Setujui Laporan (Approve)'
+                            }
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                              report.status === 'approved'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-200'
+                            }`}
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>{report.status === 'approved' ? 'Approved' : 'Approve'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => onOpenStatusModal(report, 'rejected')}
+                            title={
+                              report.status === 'rejected'
+                                ? 'Laporan sudah ditolak (Klik untuk ubah catatan)'
+                                : 'Tolak Laporan (Reject)'
+                            }
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                              report.status === 'rejected'
+                                ? 'bg-rose-50 text-rose-700 border border-rose-300'
+                                : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-200'
+                            }`}
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>{report.status === 'rejected' ? 'Rejected' : 'Reject'}</span>
+                          </button>
+                        </>
+                      )}
+
+                      {/* Tombol Hapus */}
+                      {canDelete && (
+                        <Popconfirm
+                          title="Hapus Laporan Lapangan"
+                          description="Apakah Anda yakin ingin menghapus laporan ini?"
+                          onConfirm={() => onDeleteReport(report.id)}
+                          okText="Ya, Hapus"
+                          cancelText="Batal"
+                          okButtonProps={{ danger: true }}
+                        >
+                          <button
+                            type="button"
+                            title="Hapus Laporan"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer ml-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </Popconfirm>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

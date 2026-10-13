@@ -1,18 +1,15 @@
 meta {
   name: Get All Reports
   type: http
-  seq: 1
+  seq: 7
 }
 
 get {
-  url: {{baseUrl}}/api/reports
+  url: {{baseUrl}}/api/reports?status=all&page=1&limit=10&sort=newest
   body: none
-  auth: none
+  auth: bearer
 }
 
-params:query {
-  ~status: pending
-  ~search: pipa
-  ~page: 1
-  ~limit: 10
+auth:bearer {
+  token: {{token}}
 }
