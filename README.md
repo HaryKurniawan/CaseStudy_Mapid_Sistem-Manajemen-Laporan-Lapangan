@@ -50,7 +50,7 @@ Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi t
 - **Validasi Data**: [Zod](https://zod.dev/)
 - **Dokumentasi API**: [Swagger UI / OpenAPI 3.0](https://swagger.io/) (`/api-docs`)
 - **API Client Collection**: [Bruno](https://www.usebruno.com/) (Folder `backend/bruno/`)
-- **File Skema Database**: File SQL DDL mentah di [`backend/schema.sql`](./backend/schema.sql)
+- **Database Schema**: Dikelola secara deklaratif dengan Prisma ORM ([`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma))
 
 ### **Frontend**
 
@@ -106,7 +106,7 @@ mapid/
 │   │   │   └── swaggerDoc.ts         # Spesifikasi OpenAPI 3.0 Swagger
 │   │   ├── app.ts                    # Inisialisasi Express & middlewares
 │   │   └── index.ts                  # Server listener entry point
-│   ├── schema.sql                    # Skema database PostgreSQL mentah (DDL)
+│   ├── vercel.json                   # Konfigurasi deployment serverless Vercel
 │   ├── .env.example
 │   └── package.json
 ├── frontend/
@@ -137,7 +137,7 @@ mapid/
 
 ## Skema Database PostgreSQL
 
-Skema database didefinisikan secara deklaratif di [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma) dan skema DDL murni disertakan di [`backend/schema.sql`](./backend/schema.sql).
+Skema database didefinisikan dan dikelola secara deklaratif menggunakan Prisma ORM di [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma).
 
 ### 1. Tabel `users`
 

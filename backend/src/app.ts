@@ -31,6 +31,18 @@ export const createApp = (): Application => {
     next();
   });
 
+  // Root endpoint
+  app.get('/', (_req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'UP',
+      message: 'Field Reports Management API is running',
+      docs: '/api-docs',
+      health: '/api/health',
+      reports: '/api/reports',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // Health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {
     res.status(200).json({
@@ -40,8 +52,15 @@ export const createApp = (): Application => {
     });
   });
 
-  // Swagger Documentation
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  // Swagger Documentation (dengan CDN fallback untuk serverless environment seperti Vercel)
+  const swaggerCustomOptions = {
+    customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.js',
+    ],
+  };
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerCustomOptions));
 
   // Rute API Autentikasi, Pengguna, dan Laporan
   app.use('/api/auth', authRoutes);
