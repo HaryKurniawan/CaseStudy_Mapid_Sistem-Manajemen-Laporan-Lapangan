@@ -6,6 +6,16 @@ Aplikasi ini telah mengimplementasikan sistem **Multi-Role RBAC (Admin, Approver
 
 ---
 
+## Live Deployment Demo (Vercel)
+
+Aplikasi telah aktif dan dideploy ke Vercel dan dapat langsung diakses & diuji secara live:
+
+- **Web Dashboard (Frontend)**: [https://case-study-mapid-sistem-manajemen.vercel.app/](https://case-study-mapid-sistem-manajemen.vercel.app/)
+- **REST API Backend**: [https://case-study-mapid-sistem-manajemen-l.vercel.app/api](https://case-study-mapid-sistem-manajemen-l.vercel.app/api)
+- **Dokumentasi API (Swagger UI)**: [https://case-study-mapid-sistem-manajemen-l.vercel.app/api-docs/](https://case-study-mapid-sistem-manajemen-l.vercel.app/api-docs/)
+
+---
+
 ## Akun Demo (Untuk Evaluasi Cepat)
 
 Untuk memudahkan tim penilai/evaluator langsung mencoba seluruh fitur aplikasi tanpa registrasi manual, telah disediakan akun demo untuk masing-masing peran (role). Anda juga dapat menggunakan fitur **1-Klik Masuk** di halaman login:
